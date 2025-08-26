@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Random;
 import javax.swing.*;
 
-public class PacMan extends JPanel {
+public class PacMan extends JPanel implements ActionListener {
     // Classes for images
     class Block {
         // are these things I must define when I create the object?
@@ -55,6 +55,8 @@ public class PacMan extends JPanel {
     HashSet<Block> ghosts;
     Block pacman;
 
+    Timer gameLoop;
+
     // Tile map for level
     // X = wall, O = skip, P = pac man, ' ' = food
     // Ghosts: b = blue, o = orange, p = pink, r = red
@@ -99,6 +101,8 @@ public class PacMan extends JPanel {
         pacmanLeftImage = new ImageIcon(getClass().getResource("./pixel_art/pacmanLeft.png")).getImage();
 
         loadMap();
+        gameLoop = new Timer(50, this); // 50ms over 1000ms per second you get 20fps with this refresh rate
+        gameLoop.start();
     } 
 
     public void loadMap() {
@@ -146,7 +150,7 @@ public class PacMan extends JPanel {
         }
     }
 
-    // part of panel obj somehow - look that up
+    // This only draws once, so we need a game loop attached to JPanel
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         draw(g);
@@ -164,5 +168,10 @@ public class PacMan extends JPanel {
         for (Block food : foods) {
             g.fillRect(food.x, food.y, food.width, food.height);
         }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        repaint();
     }
 }
