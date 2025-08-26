@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Random;
 import javax.swing.*;
 
-public class PacMan extends JPanel implements ActionListener {
+public class PacMan extends JPanel implements ActionListener, KeyListener {
     // Classes for images
     class Block {
         // are these things I must define when I create the object?
@@ -18,6 +18,11 @@ public class PacMan extends JPanel implements ActionListener {
         int startX;
         int startY;
 
+        // for velocity
+        char direction = 'U'; // U, D, L, R
+        int velocityX = 0;
+        int velocityY = 0;
+
         // if so then what are these?
         Block(Image image, int x, int y, int width, int height) {
             this.image = image;
@@ -27,6 +32,30 @@ public class PacMan extends JPanel implements ActionListener {
             this.height = height;
             this.startX = x;
             this.startY = y;
+        }
+
+        void updateDirection(char direction) {
+            this.direction = direction;
+            updateVelocity();
+        }
+
+        void updateVelocity() {
+            if (this.direction == 'U') {
+                this.velocityX = 0;
+                this.velocityY = -tileSize/4;
+            }
+            else if (this.direction == 'D') {
+                this.velocityX = 0;
+                this.velocityY = tileSize/4;
+            }
+            else if (this.direction == 'L') {
+                this.velocityX = -tileSize/4;
+                this.velocityY = 0;
+            }
+            else if (this.direction == 'R') {
+                this.velocityX = tileSize/4;
+                this.velocityY = 0;
+            }
         }
     }
 
@@ -87,6 +116,8 @@ public class PacMan extends JPanel implements ActionListener {
     PacMan() {
         setPreferredSize(new Dimension(boardWidth, boardHeight));
         setBackground(Color.BLACK);
+        addKeyListener(this); // this works because implements on this obj contains the keylistener
+        setFocusable(true);
 
         // load images
         wallImage = new ImageIcon(getClass().getResource("./pixel_art/wall.png")).getImage();
@@ -101,6 +132,7 @@ public class PacMan extends JPanel implements ActionListener {
         pacmanLeftImage = new ImageIcon(getClass().getResource("./pixel_art/pacmanLeft.png")).getImage();
 
         loadMap();
+        // how does this connect to action performed?
         gameLoop = new Timer(50, this); // 50ms over 1000ms per second you get 20fps with this refresh rate
         gameLoop.start();
     } 
@@ -170,8 +202,37 @@ public class PacMan extends JPanel implements ActionListener {
         }
     }
 
+    public void move() {
+        pacman.x += pacman.velocityX;
+        pacman.y += pacman.velocityY;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
+        move();
         repaint();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {} // activates when you hold a key, we don't need that
+
+    @Override
+    public void keyPressed(KeyEvent e) {} // activates only when you press a key, we don't need that either
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // System.out.println("KeyEvent: " + e.getKeyCode());
+        if (e.getKeyCode() == KeyEvent.VK_UP) {
+            pacman.updateDirection('U');
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            pacman.updateDirection('D');
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            pacman.updateDirection('R');
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            pacman.updateDirection('L');
+        }
     }
 }
