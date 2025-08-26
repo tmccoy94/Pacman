@@ -35,8 +35,23 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         }
 
         void updateDirection(char direction) {
+            char prevDirection = this.direction;
             this.direction = direction;
             updateVelocity();
+            // move one step ahead
+            this.x += this.velocityX;
+            this.y += this.velocityY;
+            for (Block wall : walls) {
+                if (collision(this, wall)) {
+                    // if it runs into something on this step, take a step back
+                    // and change to original direction.
+                    // Effectively causing no change on next paint.
+                    this.x -= this.velocityX;
+                    this.y -= this.velocityY;
+                    this.direction = prevDirection;
+                    updateVelocity();
+                }
+            }
         }
 
         void updateVelocity() {
@@ -231,10 +246,12 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {} // activates when you hold a key, we don't need that
+    public void keyTyped(KeyEvent e) {        
+    } // activates when you hold a key, we don't need that
 
     @Override
-    public void keyPressed(KeyEvent e) {} // activates only when you press a key, we don't need that either
+    public void keyPressed(KeyEvent e) {
+    } // activates only when you press a key, we don't need that either
 
     @Override
     public void keyReleased(KeyEvent e) {
