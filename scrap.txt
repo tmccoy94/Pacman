@@ -1,0 +1,5 @@
+public class scrap {
+    for (Block wall : walls) {
+            g.drawImage(wall.image, wall.x, wall.y, wall.width, wall.height, null);
+        }
+}
