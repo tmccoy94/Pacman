@@ -25,7 +25,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
 
         // Disred direction - implement for ghosts not getting stuck in a loop
         // when they cross the boundary of the map. See move() for more.
-        char desiredDirection = '\0';        
+        char desiredDirection = '\0';   
+        
+        // Utilize frame count for better directional control
+        int frameCount = 0;
 
         // if so then what are these?
         Block(Image image, int x, int y, int width, int height) {
@@ -244,7 +247,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         }
         g.setFont(new Font("Arial", Font.PLAIN, 18));
         if (gameOver) {
-            g.drawString("Game Over, Total Score: " + String.valueOf(score) + " new game? Press [n]", tileSize/2, tileSize/2);
+            g.drawString("Game Over. Total Score: " + String.valueOf(score) + " new game? Press [n]", tileSize/2, tileSize/2);
+        }
+        else if (levelWon) {
+            g.drawString("Level Won! Total Score: " + String.valueOf(score) + " new game? Press [n]", tileSize/2, tileSize/2);
         }
         else {
             g.drawString("x" + String.valueOf(lives) + " Score: " + String.valueOf(score), tileSize/2, tileSize/2);
@@ -285,9 +291,13 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             }            
         }
         foods.remove(foodEaten);
+        if (foods.size() == 0) {
+            levelWon = true;
+        }
         // Reset desired direction if moving in that direction
-        if (pacman.desiredDirection == pacman.direction) {
+        if (pacman.desiredDirection == pacman.direction || pacman.frameCount >= 6) {
             pacman.desiredDirection = '\0';
+            pacman.frameCount = 0;
         }
         // Update image afterwards bc an attempt change in direction is not
         // always a change in direction.
@@ -373,7 +383,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!gameOver) {
+        if (!gameOver && !levelWon) {
+            pacman.frameCount += 1;
             move();
             repaint();
         }
@@ -395,15 +406,19 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         // If update direction called multiple times it increases velocity. I need that limited to 1 time per frame.
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             pacman.desiredDirection = 'U';
+            pacman.frameCount = 0;
         }
         else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             pacman.desiredDirection = 'D';
+            pacman.frameCount = 0;
         }
         else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             pacman.desiredDirection = 'R';
+            pacman.frameCount = 0;
         }
         else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             pacman.desiredDirection = 'L';
+            pacman.frameCount = 0;
         }
         else if (e.getKeyCode() == KeyEvent.VK_N) {
             if (gameOver) {
