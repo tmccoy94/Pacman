@@ -119,6 +119,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     int score = 0;
     int lives = 3;
     boolean gameOver = false;
+    boolean levelWon = false;
 
     // Tile map for level
     // X = wall, O = skip, P = pac man, ' ' = food
@@ -243,7 +244,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         }
         g.setFont(new Font("Arial", Font.PLAIN, 18));
         if (gameOver) {
-            g.drawString("Game Over, Total Score: " + String.valueOf(score), tileSize/2, tileSize/2);
+            g.drawString("Game Over, Total Score: " + String.valueOf(score) + " new game? Press [n]", tileSize/2, tileSize/2);
         }
         else {
             g.drawString("x" + String.valueOf(lives) + " Score: " + String.valueOf(score), tileSize/2, tileSize/2);
@@ -251,7 +252,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     }
 
     public void move() {
-
+        // change to desired direction
+        if (pacman.desiredDirection != '\0') {
+            pacman.updateDirection(pacman.desiredDirection);
+        } 
         // Pac man movement ----
         pacman.x += pacman.velocityX; // changes the x position pacman is painted at
         pacman.y += pacman.velocityY; // changes the y position pacman is painted at
@@ -281,24 +285,41 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             }            
         }
         foods.remove(foodEaten);
-        // check ghost collision
-        for (Block ghost : ghosts) {
-            if(collision(pacman, ghost)) {
-                lives -= 1;
-                if (lives <= 0) {
-                    gameOver = true;
-                }
-                pacman.reset();
-            }
+        // Reset desired direction if moving in that direction
+        if (pacman.desiredDirection == pacman.direction) {
+            pacman.desiredDirection = '\0';
+        }
+        // Update image afterwards bc an attempt change in direction is not
+        // always a change in direction.
+
+        if (pacman.direction == 'U') {
+            pacman.image = pacmanUpImage;
+        }
+        else if (pacman.direction == 'D') {
+            pacman.image = pacmanDownImage;
+        }
+        else if (pacman.direction == 'R') {
+            pacman.image = pacmanRightImage;
+        }
+        else if (pacman.direction == 'L') {
+            pacman.image = pacmanLeftImage;
         }
 
 
         // Ghost movement ----
         for (Block ghost : ghosts) {
-            
+            // check pacman collision
+            if(collision(pacman, ghost)) {
+                lives -= 1;
+                if (lives <= 0) {
+                    gameOver = true;
+                }
+                resetPositions();
+            }
+
             ghost.x += ghost.velocityX;
             ghost.y += ghost.velocityY;
-
+            
             // change to desired direction
             if (ghost.desiredDirection != '\0') {
                 ghost.updateDirection(ghost.desiredDirection);
@@ -330,9 +351,17 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                 ghost.desiredDirection = '\0';
             } 
         }
-        
+    }
 
-
+    public void resetPositions() {
+        pacman.velocityX = 0;
+        pacman.velocityY = 0;
+        pacman.reset();
+        for (Block ghost : ghosts) {
+            ghost.reset();
+            char newDirection = directions[random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
     }
 
     public boolean collision(Block a, Block b) {
@@ -348,6 +377,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             move();
             repaint();
         }
+
     }
 
     @Override
@@ -364,32 +394,27 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
 
         // If update direction called multiple times it increases velocity. I need that limited to 1 time per frame.
         if (e.getKeyCode() == KeyEvent.VK_UP) {
-            pacman.updateDirection('U');
+            pacman.desiredDirection = 'U';
         }
         else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            pacman.updateDirection('D');
+            pacman.desiredDirection = 'D';
         }
         else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            pacman.updateDirection('R');
+            pacman.desiredDirection = 'R';
         }
         else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            pacman.updateDirection('L');
+            pacman.desiredDirection = 'L';
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_N) {
+            if (gameOver) {
+                loadMap();
+                resetPositions();
+                score = 0;
+                lives = 3;
+                gameOver = false;
+            }
         }
 
-        // Update image afterwards bc an attempt change in direction is not
-        // always a change in direction.
-
-        if (pacman.direction == 'U') {
-            pacman.image = pacmanUpImage;
-        }
-        else if (pacman.direction == 'D') {
-            pacman.image = pacmanDownImage;
-        }
-        else if (pacman.direction == 'R') {
-            pacman.image = pacmanRightImage;
-        }
-        else if (pacman.direction == 'L') {
-            pacman.image = pacmanLeftImage;
-        }
+        
     }
 }
