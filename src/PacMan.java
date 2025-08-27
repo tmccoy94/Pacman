@@ -80,7 +80,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
 
     // Panel size and images
     private int columnCount = 19;
-    private int rowCount = 21;
+    private int rowCount = 22;
     private int tileSize = 32;
     private int boardWidth = columnCount * tileSize;
     private int boardHeight = rowCount * tileSize;
@@ -110,14 +110,16 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     char[] directions = {'U', 'D', 'L', 'R'}; // up, down, left, right (for ghosts)
     Random random = new Random();
 
-    // Implement scoring
+    // Implement scoring mechanics
     int score = 0;
     int lives = 3;
+    boolean gameOver = false;
 
     // Tile map for level
     // X = wall, O = skip, P = pac man, ' ' = food
     // Ghosts: b = blue, o = orange, p = pink, r = red
     private String[] tileMap = {
+        "OOOOOOOOOOOOOOOOOOO",
         "XXXXXXXXXXXXXXXXXXX",
         "X        X        X",
         "X XX XXX X XXX XX X",
@@ -160,6 +162,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         pacmanLeftImage = new ImageIcon(getClass().getResource("./pixel_art/pacmanLeft.png")).getImage();
 
         loadMap();
+
+        // All below is in the game loop
         for (Block ghost: ghosts) {
             char newDirection = directions[random.nextInt(4)];
             ghost.updateDirection(newDirection);
@@ -232,6 +236,13 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         for (Block food : foods) {
             g.fillRect(food.x, food.y, food.width, food.height);
         }
+        g.setFont(new Font("Arial", Font.PLAIN, 18));
+        if (gameOver) {
+            g.drawString("Game Over" + String.valueOf(score), tileSize/2, tileSize/2);
+        }
+        else {
+            g.drawString("x" + String.valueOf(lives) + " Score: " + String.valueOf(score), tileSize/2, tileSize/2);
+        }
     }
 
     public void move() {
@@ -248,12 +259,23 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             }            
         }
         // Reset x upon crossing off screen for pacman
-        if (pacman.x + pacman.width >= boardWidth) {
+        // Right edge passed — wrap to left
+        if (pacman.x >= boardWidth) {
             pacman.x = 0;
-        } 
-        else if (pacman.x <= 0) {
-            pacman.x = boardWidth;
         }
+        // Left edge passed — wrap to right (subtract pacman's width to keep full sprite on screen)
+        else if (pacman.x + pacman.width <= 0) {
+            pacman.x = boardWidth - pacman.width;
+        }
+        // Check food collision
+        Block foodEaten = null;
+        for (Block food : foods) {
+            if (collision(pacman, food)) {
+                foodEaten = food;
+                score += 10;
+            }            
+        }
+        foods.remove(foodEaten);
 
         // Ghost movement ----
         for (Block ghost : ghosts) {
