@@ -97,15 +97,22 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     private Image pacmanRightImage;
     private Image pacmanLeftImage;
 
-    // Hash sets to store values for multi block objs and one for packman
+    // Hash sets to store values for multi block objs and one for pac man
     HashSet<Block> walls;
     HashSet<Block> foods;
     HashSet<Block> ghosts;
     Block pacman;
 
+    // Use to fire off an action event that triggers a repaint
     Timer gameLoop;
+
+    // Use these for ghost movement
     char[] directions = {'U', 'D', 'L', 'R'}; // up, down, left, right (for ghosts)
     Random random = new Random();
+
+    // Implement scoring
+    int score = 0;
+    int lives = 3;
 
     // Tile map for level
     // X = wall, O = skip, P = pac man, ' ' = food
@@ -228,10 +235,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     }
 
     public void move() {
+
+        // Pac man movement ----
         pacman.x += pacman.velocityX; // changes the x position pacman is painted at
         pacman.y += pacman.velocityY; // changes the y position pacman is painted at
-        
-
         // Check wall positions
         for (Block wall : walls) {
             if (collision(pacman, wall)) {
@@ -240,8 +247,15 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                 break;
             }            
         }
+        // Reset x upon crossing off screen for pacman
+        if (pacman.x + pacman.width >= boardWidth) {
+            pacman.x = 0;
+        } 
+        else if (pacman.x <= 0) {
+            pacman.x = boardWidth;
+        }
 
-        // Move the ghosts
+        // Ghost movement ----
         for (Block ghost : ghosts) {
             
             ghost.x += ghost.velocityX;
@@ -263,12 +277,14 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                     ghost.updateDirection(newDirection);
                 }
             } 
-            if (ghost.x >= 608) {
-                ghost.x = 0;
+            if (ghost.x + ghost.width >= boardWidth) {
+                ghost.updateDirection('L');
                 ghost.desiredDirection = directions[random.nextInt(2)]; // pick up or down
             } 
             else if (ghost.x <= 0) {
-                ghost.x = 608;
+                // Turn around
+                ghost.updateDirection('R');
+                // Go up or down at next turn
                 ghost.desiredDirection = directions[random.nextInt(2)]; // pick up or down
             }
             // Reset desired direction if moving in that direction
@@ -276,13 +292,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                 ghost.desiredDirection = '\0';
             } 
         }
-        // Reset x upon crossing off screen for pacman
-        if (pacman.x >= 608) {
-            pacman.x = 0;
-        } 
-        else if (pacman.x <= 0) {
-            pacman.x = 608;
-        }
+        
 
 
     }
