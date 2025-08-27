@@ -243,7 +243,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         }
         g.setFont(new Font("Arial", Font.PLAIN, 18));
         if (gameOver) {
-            g.drawString("Game Over" + String.valueOf(score), tileSize/2, tileSize/2);
+            g.drawString("Game Over, Total Score: " + String.valueOf(score), tileSize/2, tileSize/2);
         }
         else {
             g.drawString("x" + String.valueOf(lives) + " Score: " + String.valueOf(score), tileSize/2, tileSize/2);
@@ -285,6 +285,9 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         for (Block ghost : ghosts) {
             if(collision(pacman, ghost)) {
                 lives -= 1;
+                if (lives <= 0) {
+                    gameOver = true;
+                }
                 pacman.reset();
             }
         }
@@ -341,8 +344,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        move();
-        repaint();
+        if (!gameOver) {
+            move();
+            repaint();
+        }
     }
 
     @Override
