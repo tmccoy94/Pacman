@@ -100,6 +100,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     Block pacman;
 
     Timer gameLoop;
+    char[] directions = {'U', 'D', 'L', 'R'}; // up, down, left, right (for ghosts)
+    Random random = new Random();
 
     // Tile map for level
     // X = wall, O = skip, P = pac man, ' ' = food
@@ -147,6 +149,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         pacmanLeftImage = new ImageIcon(getClass().getResource("./pixel_art/pacmanLeft.png")).getImage();
 
         loadMap();
+        for (Block ghost: ghosts) {
+            char newDirection = directions[random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
         // how does this connect to action performed?
         gameLoop = new Timer(50, this); // 50ms over 1000ms per second you get 20fps with this refresh rate
         gameLoop.start();
@@ -220,6 +226,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     public void move() {
         pacman.x += pacman.velocityX; // changes the x position pacman is painted at
         pacman.y += pacman.velocityY; // changes the y position pacman is painted at
+        
 
         // Check wall positions
         for (Block wall : walls) {
@@ -229,7 +236,22 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                 break;
             }            
         }
-        
+
+        // Move the ghosts
+        for (Block ghost : ghosts) {
+            ghost.x += ghost.velocityX;
+            ghost.y += ghost.velocityY;
+            for (Block wall : walls) {
+                if (collision(ghost, wall)) {
+                    // step back
+                    ghost.x -= ghost.velocityX;
+                    ghost.y -= ghost.velocityY;
+                    // Pick a new direction to go in
+                    char newDirection = directions[random.nextInt(4)];
+                    ghost.updateDirection(newDirection);
+                }   
+            } 
+        }                
     }
 
     public boolean collision(Block a, Block b) {
@@ -256,6 +278,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
         // System.out.println("KeyEvent: " + e.getKeyCode());
+
+        // If update direction called multiple times it increases velocity. I need that limited to 1 time per frame.
         if (e.getKeyCode() == KeyEvent.VK_UP) {
             pacman.updateDirection('U');
         }
@@ -267,6 +291,22 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         }
         else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             pacman.updateDirection('L');
+        }
+
+        // Update image afterwards bc an attempt change in direction is not
+        // always a change in direction.
+
+        if (pacman.direction == 'U') {
+            pacman.image = pacmanUpImage;
+        }
+        else if (pacman.direction == 'D') {
+            pacman.image = pacmanDownImage;
+        }
+        else if (pacman.direction == 'R') {
+            pacman.image = pacmanRightImage;
+        }
+        else if (pacman.direction == 'L') {
+            pacman.image = pacmanLeftImage;
         }
     }
 }
