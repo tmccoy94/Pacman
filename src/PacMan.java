@@ -76,6 +76,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                 this.velocityY = 0;
             }
         }
+
+        void reset() {
+            this.x = this.startX;
+            this.y = this.startY;
+        }
     }
 
     // Panel size and images
@@ -276,6 +281,14 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             }            
         }
         foods.remove(foodEaten);
+        // check ghost collision
+        for (Block ghost : ghosts) {
+            if(collision(pacman, ghost)) {
+                lives -= 1;
+                pacman.reset();
+            }
+        }
+
 
         // Ghost movement ----
         for (Block ghost : ghosts) {
