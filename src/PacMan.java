@@ -23,6 +23,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
         int velocityX = 0;
         int velocityY = 0;
 
+        // Disred direction - implement for ghosts not getting stuck in a loop
+        // when they cross the boundary of the map. See move() for more.
+        char desiredDirection = '\0';        
+
         // if so then what are these?
         Block(Image image, int x, int y, int width, int height) {
             this.image = image;
@@ -239,8 +243,16 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
 
         // Move the ghosts
         for (Block ghost : ghosts) {
+            
             ghost.x += ghost.velocityX;
             ghost.y += ghost.velocityY;
+
+            // change to desired direction
+            if (ghost.desiredDirection != '\0') {
+                ghost.updateDirection(ghost.desiredDirection);
+            } 
+            
+            // Handle collisions for all ghosts
             for (Block wall : walls) {
                 if (collision(ghost, wall)) {
                     // step back
@@ -249,9 +261,30 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
                     // Pick a new direction to go in
                     char newDirection = directions[random.nextInt(4)];
                     ghost.updateDirection(newDirection);
-                }   
+                }
             } 
-        }                
+            if (ghost.x >= 608) {
+                ghost.x = 0;
+                ghost.desiredDirection = directions[random.nextInt(2)]; // pick up or down
+            } 
+            else if (ghost.x <= 0) {
+                ghost.x = 608;
+                ghost.desiredDirection = directions[random.nextInt(2)]; // pick up or down
+            }
+            // Reset desired direction if moving in that direction
+            if (ghost.desiredDirection == ghost.direction) {
+                ghost.desiredDirection = '\0';
+            } 
+        }
+        // Reset x upon crossing off screen for pacman
+        if (pacman.x >= 608) {
+            pacman.x = 0;
+        } 
+        else if (pacman.x <= 0) {
+            pacman.x = 608;
+        }
+
+
     }
 
     public boolean collision(Block a, Block b) {

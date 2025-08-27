@@ -1,7 +1,6 @@
-for (Block wall : walls) {
-            if (collision(ghost, wall)) {
-                ghost.x -= ghost.velocityX;
-                ghost.y -= ghost.velocityY;
-                break;
-            }            
-        }
+if (ghost.x > 608) {
+                ghost.x = 0;
+            } 
+            else if (ghost.x < 0) {
+                ghost.x = 608;
+            } 
