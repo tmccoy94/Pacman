@@ -291,7 +291,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             }            
         }
         foods.remove(foodEaten);
-        if (foods.size() == 0) {
+        if (foods.isEmpty()) {
             levelWon = true;
         }
         // Reset desired direction if moving in that direction
@@ -383,10 +383,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (!gameOver && !levelWon) {
-            pacman.frameCount += 1;
-            move();
-            repaint();
+        pacman.frameCount++;
+        move();
+        repaint();
+        if (gameOver || levelWon) {
+            gameLoop.stop();
         }
 
     }
@@ -421,12 +422,14 @@ public class PacMan extends JPanel implements ActionListener, KeyListener {
             pacman.frameCount = 0;
         }
         else if (e.getKeyCode() == KeyEvent.VK_N) {
-            if (gameOver) {
+            if (gameOver || levelWon) {
                 loadMap();
                 resetPositions();
                 score = 0;
                 lives = 3;
+                levelWon = false;
                 gameOver = false;
+                gameLoop.start();
             }
         }
 
